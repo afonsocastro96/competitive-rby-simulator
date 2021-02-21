@@ -27,6 +27,11 @@ public class GameEngine {
     public static final int DONT_SKIP_ATTACK = 2;
 
     private State state;
+
+    public Board getBoard() {
+        return board;
+    }
+
     private Board board = null;
 
     public GameEngine(int inputMode, int outputMode) {
@@ -165,7 +170,6 @@ public class GameEngine {
             case Status.WOKE_UP:
                 OutputHandler.outputText(attacker_name + " woke up!");
                 break;
-
         }
     }
 
@@ -203,6 +207,7 @@ public class GameEngine {
         int damage = 0;
         if(move.getPower() > 0) {
             boolean criticalHit = Rand.criticalHit(Pokemons.getPokemon(attacker.getSpecies()).getBase_speed());
+
             damage = DamageFormula.calcDamage(attacker, defender, move, criticalHit);
             int damageDealt = defender.inflictDamage(damage);
             if(criticalHit) {
@@ -265,7 +270,7 @@ public class GameEngine {
             case Effect.SUCCESSFULLY_PUT_TO_SLEEP:
                 OutputHandler.outputText(defender_name + " fell asleep!");
                 break;
-            case Effect.SUCCESFULLY_FROZEN:
+            case Effect.SUCCESSFULLY_FROZEN:
                 OutputHandler.outputText(defender_name + " was frozen solid!");
                 break;
             case Effect.RECOVERY_SUCCESSFUL:
@@ -290,8 +295,17 @@ public class GameEngine {
                 OutputHandler.outputText(defender_name + "'s speed fell!");
                 break;
             case Effect.ENERGY_DRAINED:
-                OutputHandler.outputText(defender_name + " had its enegy drained!");
-
+                OutputHandler.outputText(defender_name + " had its energy drained!");
+                break;
+            case Effect.LIGHT_SCREEN_PROTECTED:
+                OutputHandler.outputText(attacker_name + "'s protected against special attacks!");
+                break;
+            case Effect.REFLECT_GAINED_ARMOUR:
+                OutputHandler.outputText(attacker_name + " gained armor!");
+                break;
+            case Effect.REST_SUCCESSFUL:
+                OutputHandler.outputText(attacker_name + " slept and became healthy!");
+                break;
         }
     }
 

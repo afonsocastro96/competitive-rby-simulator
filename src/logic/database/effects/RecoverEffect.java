@@ -1,5 +1,6 @@
 package logic.database.effects;
 
+import logic.database.statuses.SleepStatus;
 import logic.things.Effect;
 import logic.things.Move;
 import logic.things.Pokemon;
@@ -17,7 +18,11 @@ public class RecoverEffect extends Effect {
         int maxHp = attacker.getHp();
 
         int hpDifference = maxHp - currentHp;
-        int amountToRecover = maxHp / 2;
+        int amountToRecover;
+        if(move_used.getName().equals("Rest"))
+            amountToRecover = maxHp;
+        else
+            amountToRecover = maxHp / 2;
 
         if(hpDifference == 0 || hpDifference == 255 || hpDifference == 511)
             return BUT_IT_FAILED;
@@ -27,6 +32,10 @@ public class RecoverEffect extends Effect {
         else
             attacker.setCurrentHp(attacker.getCurrentHp()+amountToRecover);
 
+        if(move_used.getName().equals("Rest")) {
+            attacker.setStatus(new SleepStatus(true));
+            return REST_SUCCESSFUL;
+        }
         return RECOVERY_SUCCESSFUL;
     }
 }

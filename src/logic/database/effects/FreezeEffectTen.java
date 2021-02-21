@@ -12,15 +12,22 @@ public class FreezeEffectTen extends Effect {
         super("Freeze Side Effect Ten", 10, false);
     }
 
+    public static int frozen = 0;
+    public static int notFrozen = 0;
+
+
     @Override
     public int resolveEffect(Pokemon attacker, Pokemon defender, Move move_used, int damage_dealt) {
         if (move_used.getType() != defender.getType1() && move_used.getType() != defender.getType2()) {
             if (Rand.itHappened(this.getProbablility())) {
                 if (defender.getStatus() == null) {
                     defender.setStatus(new FreezeStatus());
-                    return SUCCESFULLY_FROZEN;
+                    frozen++;
+                    return SUCCESSFULLY_FROZEN;
                 }
+                else frozen++;
             }
+            else notFrozen++;
         }
         return NOTHING;
     }

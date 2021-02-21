@@ -9,9 +9,12 @@ public class SleepStatus extends Status {
 
     private int sleep_counter;
 
-    public SleepStatus() {
+    public SleepStatus(boolean isRestSleep) {
         super("Sleep", "SLP", true, 1, 7, Trigger.BEFORE_MOVING, 0);
-        this.sleep_counter = ThreadLocalRandom.current().nextInt(minDuration, maxDuration+1);
+        if(isRestSleep)
+            this.sleep_counter = 2;
+        else
+            this.sleep_counter = ThreadLocalRandom.current().nextInt(minDuration, maxDuration+1);
     }
 
     @Override

@@ -16,7 +16,7 @@ public class SleepEffect extends Effect {
     @Override
     public int resolveEffect(Pokemon attacker, Pokemon defender, Move move_used, int damage_dealt) {
         if(defender.getStatus() == null) {
-            defender.setStatus(new SleepStatus());
+            defender.setStatus(new SleepStatus(false));
             return SUCCESSFULLY_PUT_TO_SLEEP;
         }
         else
