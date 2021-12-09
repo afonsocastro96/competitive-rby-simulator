@@ -20,6 +20,7 @@ public abstract class Effect {
     public static final int LIGHT_SCREEN_PROTECTED = 15;
     public static final int REFLECT_GAINED_ARMOUR = 16;
     public static final int REST_SUCCESSFUL = 17;
+    public static final int ATTACK_SHARPLY_RAISED = 18;
 
     private String name;
     private boolean effectAppliedAfterOpponentFainted;
@@ -47,6 +48,8 @@ public abstract class Effect {
     public abstract int resolveEffect(Pokemon attacker, Pokemon defender, Move move_used, int damage_dealt);
 
     protected void applyStackingEffectGlitch(Pokemon defender) {
+        if(defender.getStatus() == null)
+            return;
         if(defender.getStatus().getName().equals("Paralysis"))
             defender.addParalysisSpeedDropCounter(1);
         else if(defender.getStatus().getName().equals("Burn"))

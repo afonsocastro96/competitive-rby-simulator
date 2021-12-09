@@ -206,7 +206,7 @@ public class GameEngine {
         //Determine damage to do
         int damage = 0;
         if(move.getPower() > 0) {
-            boolean criticalHit = Rand.criticalHit(Pokemons.getPokemon(attacker.getSpecies()).getBase_speed());
+            boolean criticalHit = Rand.criticalHit(move, attacker);
 
             damage = DamageFormula.calcDamage(attacker, defender, move, criticalHit);
             int damageDealt = defender.inflictDamage(damage);
@@ -305,6 +305,9 @@ public class GameEngine {
                 break;
             case Effect.REST_SUCCESSFUL:
                 OutputHandler.outputText(attacker_name + " slept and became healthy!");
+                break;
+            case Effect.ATTACK_SHARPLY_RAISED:
+                OutputHandler.outputText(attacker_name + "'s attack rose sharply!");
                 break;
         }
     }

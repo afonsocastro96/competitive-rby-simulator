@@ -31,10 +31,12 @@ public class Moves {
         Move rest = new Move("Rest", 16, Type.PSYCHIC, 0, 100, new RecoverEffect());
         Move seismictoss = new Move("Seismic Toss", 32, Type.FIGHTING, 1, 100, new NoEffect());
         Move selfdestruct = new Move("Selfdestruct", 8, Type.NORMAL, 260, 100, new ExplodeEffect()); // Virtually the same, coded like this for simplicity
+        Move slash = new Move("Slash", 32, Type.NORMAL, 70, 100, new NoEffect(), true);
         Move sleeppowder = new Move("Sleep Powder", 24, Type.GRASS, 0, 75, new SleepEffect());
         Move sing = new Move("Sing", 24, Type.NORMAL, 0, 55, new SleepEffect());
         Move struggle = new Move("Struggle", 256, Type.NORMAL, 50, 0, new StruggleRecoilEffect());
         Move stunspore = new Move("Stun Spore", 48, Type.GRASS, 0, 75, new ParalyzeEffect());
+        Move swordsdance = new Move("Swords Dance", 48, Type.NORMAL, 0, 100, new AttackSharpRaiseEffect());
         Move surf = new Move("Surf", 24, Type.WATER, 95, 100, new NoEffect());
         Move thunderbolt = new Move("Thunderbolt", 24, Type.ELECTRIC, 95, 100, new ParalyzeEffectTen());
         Move thunderwave = new Move("Thunder Wave", 32, Type.ELECTRIC, 0, 100, new ParalyzeEffect());
@@ -60,10 +62,12 @@ public class Moves {
         moves.put("Seismic Toss", seismictoss);
         moves.put("Selfdestruct", selfdestruct);
         moves.put("Sing", sing);
+        moves.put("Slash", slash);
         moves.put("Sleep Powder", sleeppowder);
         moves.put("Struggle", struggle);
         moves.put("Stun Spore", stunspore);
         moves.put("Surf", surf);
+        moves.put("Swords Dance", swordsdance);
         moves.put("Thunder Wave", thunderwave);
         moves.put("Thunderbolt", thunderbolt);
     }

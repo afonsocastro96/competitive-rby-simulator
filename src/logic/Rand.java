@@ -1,6 +1,9 @@
 package logic;
 
 import engine.Board;
+import logic.database.Pokemons;
+import logic.things.Move;
+import logic.things.Pokemon;
 
 import java.util.Random;
 
@@ -39,8 +42,11 @@ public class Rand {
         }
     }
 
-    public static boolean criticalHit(int speed) {
+    public static boolean criticalHit(Move move, Pokemon attacker) {
+        int speed = Pokemons.getPokemon(attacker.getSpecies()).getBase_speed();
         int t = speed/2;
+        if(move.isHighCritRateMove())
+            t *= 8;
         if(t > 255)
             t = 255;
         return generateRandom() < t;

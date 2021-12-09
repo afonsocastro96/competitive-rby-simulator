@@ -1,7 +1,6 @@
 import engine.Board;
 import engine.GameEngine;
 import input.InputHandler;
-import logic.Rand;
 import logic.database.Moves;
 import logic.database.Pokemons;
 import logic.database.effects.FreezeEffectTen;
@@ -39,7 +38,6 @@ public class Main {
         System.out.println("Number of times Player 2 (Tauros) won: " + player2_won + " (" + (double) player2_won * 100 / NUMBER_OF_SIMULATIONS + "%)");
         System.out.println("Number of ties: " + tie + " (" + (double) tie * 100 / NUMBER_OF_SIMULATIONS + "%)");
         System.out.println("Average amount of turns: " + ((float)turnCount/NUMBER_OF_SIMULATIONS));
-        System.out.println("Freeze rate: " + ((double)FreezeEffectTen.frozen*100/(FreezeEffectTen.notFrozen+FreezeEffectTen.frozen)) + "%");
 
         /*PokemonBuilder pokemonbuilder1 = Pokemons.getPokemon("Zapdos");
         PokemonBuilder pokemonbuilder2 = Pokemons.getPokemon("Starmie");

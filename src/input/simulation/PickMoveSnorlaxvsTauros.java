@@ -2,13 +2,17 @@ package input.simulation;
 
 import engine.VisibleBoard;
 
-public class PickMove {
+public class PickMoveSnorlaxvsTauros {
     public static int i = 0;
 
     public static String pickplayer1Move(VisibleBoard board) {
-        if(board.getOpponentActivePokemon().getCurrentHp() <= 208)
-            return "Hyper Beam";
-        return "Body Slam";
+        if(board.getTurn() == 1)
+            return "Reflect";
+        if(board.getOpponentActivePokemon().getCurrentHp() <= 110)
+            return "Body Slam";
+        if(board.getOwnActivePokemon().getCurrentHp() <= 180)
+            return "Rest";
+        return "Ice Beam";
     }
 
     public static String pickplayer2Move(VisibleBoard board) {
