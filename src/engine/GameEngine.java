@@ -96,7 +96,8 @@ public class GameEngine {
     }
 
     private int resolveBeforeMovingStatuses(Pokemon attacker) {
-        // Priority order: Freeze -> Recharge -> Flinch -> Confusion -> Other permanent statuses
+        // Priority order: Freeze -> Recharge -> Flinch -> Confusion -> Apply high crit rate move status ->
+        // Other permanent statuses
         if(attacker.getStatus() != null) {
             if (attacker.getStatus().getName().equals("Freeze")) {
                 OutputHandler.outputText(attacker.getSpecies() + " is frozen solid!");
@@ -113,6 +114,9 @@ public class GameEngine {
                 status_result = status.resolveStatus(attacker);
                 printStatusMessage(attacker.getSpecies(), status_result);
                 recharge = true;
+            }
+            else if(status.getName().equals("High Critical Hit Rate Move")) {
+
             }
         }
 

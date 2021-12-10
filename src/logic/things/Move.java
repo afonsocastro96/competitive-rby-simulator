@@ -7,7 +7,6 @@ public class Move {
     private int power;
     private int accuracy;
     private Effect effect;
-    private boolean high_crit_rate;
 
     public boolean isPhysical(){
         switch(type) {
@@ -49,7 +48,6 @@ public class Move {
         return effect;
     }
 
-    public boolean isHighCritRateMove() {return this.high_crit_rate; }
 
     public Move(String name, int max_pp, Type type, int power, int accuracy, Effect effect) {
         this.name = name;
@@ -58,16 +56,5 @@ public class Move {
         this.power = power;
         this.accuracy = accuracy;
         this.effect = effect;
-        this.high_crit_rate = false;
-    }
-
-    public Move(String name, int max_pp, Type type, int power, int accuracy, Effect effect, boolean high_crit_rate) {
-        this.name = name;
-        this.max_pp = max_pp;
-        this.type = type;
-        this.power = power;
-        this.accuracy = accuracy;
-        this.effect = effect;
-        this.high_crit_rate = high_crit_rate;
     }
 }

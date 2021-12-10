@@ -45,7 +45,7 @@ public class Rand {
     public static boolean criticalHit(Move move, Pokemon attacker) {
         int speed = Pokemons.getPokemon(attacker.getSpecies()).getBase_speed();
         int t = speed/2;
-        if(move.isHighCritRateMove())
+        if(move.getEffect().getName().equals("High Critical Hit Rate Effect"))
             t *= 8;
         if(t > 255)
             t = 255;
