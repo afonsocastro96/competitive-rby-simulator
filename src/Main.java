@@ -1,3 +1,4 @@
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import engine.Board;
 import engine.GameEngine;
 import input.InputHandler;
@@ -19,23 +20,26 @@ public class Main {
         long turnCount = 0;
 
         for (long i = 0; i < NUMBER_OF_SIMULATIONS; ++i) {
-            if (i % (NUMBER_OF_SIMULATIONS / 10) == 0)
+            if (NUMBER_OF_SIMULATIONS > 10 && i % (NUMBER_OF_SIMULATIONS / 10) == 0)
                 System.out.println(i * 100 / NUMBER_OF_SIMULATIONS + "% complete.");
-            GameEngine ge = new GameEngine(InputHandler.SIMULATION, OutputHandler.NOTHING);
+            GameEngine ge = new GameEngine(InputHandler.SIMULATION, OutputHandler.STRINGBUILDER);
             switch (ge.game()) {
                 case Board.PLAYER1:
                     ++player1_won;
                     break;
                 case Board.PLAYER2:
                     ++player2_won;
+                    System.out.println(OutputHandler.getBattleLog());
                     break;
                 default:
                     ++tie;
             }
-            turnCount += ge.getBoard().getTurn();
+            if(ge.getBoard().getTurn()>2)
+                System.out.println(ge.getBoard().getTurn());
+            turnCount += ge.getBoard().getTurn()-1;
         }
-        System.out.println("Number of times Player 1 (Snorlax) won: " + player1_won + " (" + (double) player1_won * 100 / NUMBER_OF_SIMULATIONS + "%)");
-        System.out.println("Number of times Player 2 (Tauros) won: " + player2_won + " (" + (double) player2_won * 100 / NUMBER_OF_SIMULATIONS + "%)");
+        System.out.println("Number of times Player 1 (Chansey) won: " + player1_won + " (" + (double) player1_won * 100 / NUMBER_OF_SIMULATIONS + "%)");
+        System.out.println("Number of times Player 2 (Golem) won: " + player2_won + " (" + (double) player2_won * 100 / NUMBER_OF_SIMULATIONS + "%)");
         System.out.println("Number of ties: " + tie + " (" + (double) tie * 100 / NUMBER_OF_SIMULATIONS + "%)");
         System.out.println("Average amount of turns: " + ((float)turnCount/NUMBER_OF_SIMULATIONS));
 

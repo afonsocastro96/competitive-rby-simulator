@@ -18,6 +18,7 @@ public class Pokemon {
     Status status;
     List<Status> volatileStatuses;
     int currentHp;
+    int substituteHp;
     int hp;
     int attack;
     int defence;
@@ -51,6 +52,7 @@ public class Pokemon {
         specialModifier = 0;
         speedModifier = 0;
         currentHp = hp;
+        substituteHp = 0;
         volatileStatuses = new ArrayList<>();
 
         // These two are used to simulate the attack/speed burn/paralysis effect stacking glitch
@@ -164,15 +166,25 @@ public class Pokemon {
             this.currentHp += amount;
     }
 
+    // Returns the damage inflicted, or, if defender was behind substitute, negative the HP remaining on the substitute
     public int inflictDamage(int damage) {
-        if(this.currentHp < damage) {
-            int ret = this.currentHp;
-            this.currentHp = 0;
-            return ret;
-        }
-        else {
-            this.currentHp -= damage;
-            return damage;
+        if(this.substituteHp > 0) {
+            if(this.substituteHp < damage) {
+                this.substituteHp = 0;
+                return 0;
+            } else {
+                this.substituteHp -= damage;
+                return -damage;
+            }
+        } else {
+            if (this.currentHp < damage) {
+                int ret = this.currentHp;
+                this.currentHp = 0;
+                return ret;
+            } else {
+                this.currentHp -= damage;
+                return damage;
+            }
         }
     }
 
@@ -183,6 +195,12 @@ public class Pokemon {
     public void setBurnAttackDropCounter(int burnAttackDropCounter) {
         this.burnAttackDropCounter = burnAttackDropCounter;
     }
+
+    public void setSubstituteHp(int substituteHp) {
+        this.substituteHp = substituteHp;
+    }
+
+    public int getSubstituteHp() {return this.substituteHp;}
 
     public List<Status> getVolatileStatuses() {
         return volatileStatuses;
@@ -238,9 +256,17 @@ public class Pokemon {
         volatileStatuses.sort(Comparator.comparingInt(Status::getPriority).reversed());
     }
 
-    public void reduceMovePP(Move m) {
+    public int getMovePP(String move) {
         for(int i = 0; i < moves_pp.length; ++i) {
-            if(moves[i].equals(m))
+            if(moves[i].getName().equals(move))
+                return moves_pp[i];
+        }
+        return -1;
+    }
+
+    public void reduceMovePP(String move) {
+        for(int i = 0; i < moves_pp.length; ++i) {
+            if(moves[i].getName().equals(move))
                 --moves_pp[i];
         }
     }

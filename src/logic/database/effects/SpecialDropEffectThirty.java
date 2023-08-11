@@ -12,6 +12,8 @@ public class SpecialDropEffectThirty extends Effect {
 
     @Override
     public int resolveEffect(Pokemon attacker, Pokemon defender, Move move_used, int damage_dealt) {
+        if(damage_dealt <= 0) // Substitute
+            return NOTHING;
         if (Rand.itHappened(this.getProbablility())) {
             defender.addStatModifier(Pokemon.SPECIAL, -1);
             applyStackingEffectGlitch(defender);

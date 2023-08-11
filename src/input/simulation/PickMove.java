@@ -6,31 +6,23 @@ public class PickMove {
     public static int i = 0;
 
     public static String pickplayer1Move(VisibleBoard board) {
-        if(board.getOpponentActivePokemon().getCurrentHp() <= 208)
-            return "Hyper Beam";
-        return "Body Slam";
+        if(board.getOpponentActivePokemon().getCurrentHp() <=100) return "Seismic Toss";
+        if(board.getOwnActivePokemon().getCurrentHp() < 0.60*703 && board.getOwnActivePokemon().getMovePP("Softboiled") != 0)
+            return "Softboiled";
+        return "Seismic Toss";
     }
 
     public static String pickplayer2Move(VisibleBoard board) {
-        if(board.getOpponentActivePokemon().getCurrentHp() <= 62)
+        return "Explosion";
+        /*if(board.getOwnActivePokemon().getCurrentHp() == 63 && board.getOpponentActivePokemon().getCurrentHp() <= 370)
+            return "Explosion";
+        if(board.getOwnActivePokemon().getMovePP("Earthquake") != 0)
+            return "Earthquake";
+        if(board.getOwnActivePokemon().getMovePP("Rock Slide") != 0)
+            return "Rock Slide";
+        if(board.getOwnActivePokemon().getMovePP("Body Slam") != 0)
             return "Body Slam";
-        if(board.getOpponentActivePokemon().getCurrentHp() <= 121 && !board.getOpponentActivePokemon().hasVolatileStatus("Reflect"))
-            return "Body Slam";
-        if(board.getOpponentActivePokemon().getCurrentHp() <= 123 && board.getOpponentActivePokemon().hasVolatileStatus("Reflect"))
-            return "Hyper Beam";
-        if(board.getOpponentActivePokemon().getCurrentHp() <= 240 && !board.getOpponentActivePokemon().hasVolatileStatus("Reflect"))
-            return "Hyper Beam";
-        if(board.getOwnActivePokemon().getCurrentHp() <= 108)
-            if(board.getOpponentActivePokemon().getCurrentHp() >= 415)
-                return "Blizzard";
-            else return "Hyper Beam";
-        if(board.getOpponentActivePokemon().getCurrentHp() <= 100 && board.getOpponentActivePokemon().hasVolatileStatus("Reflect"))
-            return "Blizzard";
-
-        if(board.getOpponentActivePokemon().getStatus() != null)
-            if(board.getOpponentActivePokemon().getStatus().getName().equals("Sleep"))
-                return "Body Slam";
-
-        return "Blizzard";
+        else
+            return "Struggle";*/
     }
 }

@@ -55,4 +55,18 @@ public class Rand {
     public static boolean attackMissed(int accuracy) {
         return !itHappened(accuracy);
     }
+
+    // 3/8 2 hits, 3/8 3 hits, 1/8 4 hits, 1/8 5 hits
+    public static int numberOfMultiHits() {
+        int r = generateRandom();
+        if(r<256*3/8)
+            return 2;
+        else if(r<256*6/8)
+            return 3;
+        else if(r<256*7/8)
+            return 4;
+        else
+            return 5;
+    }
+
 }

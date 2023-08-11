@@ -7,7 +7,7 @@ public abstract class Effect {
     public static final int SUCCESFULLY_PARALYZED = 2;
     public static final int BUT_IT_FAILED = 3;
     public static final int SUCCESSFULLY_FROZEN = 4;
-    public static final int RECHARGING = 5;
+    public static final int SUCCESSFULLY_BADLY_POISONED = 5;
     public static final int RECOVERY_SUCCESSFUL = 6;
     public static final int SPEED_SHARPLY_RAISED = 7;
     public static final int RECOIL_SUCCESSFUL = 8;
@@ -21,6 +21,11 @@ public abstract class Effect {
     public static final int REFLECT_GAINED_ARMOUR = 16;
     public static final int REST_SUCCESSFUL = 17;
     public static final int ATTACK_SHARPLY_RAISED = 18;
+    public static final int COINS_SCATTERED = 19;
+    public static final int ATTACK_RAISED = 20;
+    public static final int BECAME_CONFUSED = 21;
+    public static final int PUT_UP_SUBSTITUTE = 22;
+    public static final int DEFENCE_DROP = 23;
 
     private String name;
     private boolean effectAppliedAfterOpponentFainted;

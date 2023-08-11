@@ -4,7 +4,7 @@ import logic.things.Type;
 
 public class TypeMatchups {
     // Stored as [attacker][defender]
-    private static double[][] matchups = new double[][]{
+    private static final double[][] matchups = new double[][]{
             {1, 1, 1, 1, 1, 0.5, 1, 0, 1, 1, 1, 1, 1, 1, 1},
             {2, 1, 0.5, 0.5, 1, 2, 0.5, 0, 1, 1, 1, 1, 0.5, 2, 1},
             {1, 2, 1, 1, 1, 0.5, 2, 1, 1, 1, 2, 0.5, 1, 1, 1},

@@ -4,17 +4,15 @@ import logic.things.Effect;
 import logic.things.Move;
 import logic.things.Pokemon;
 
-public class DrainEffect extends Effect {
-    public DrainEffect() {
-        super("Drain Effect", 100, true);
+public class CoinsScatteredEffect extends Effect {
+    public CoinsScatteredEffect() {
+        super("Coins Scattered Effect", 100, true);
     }
 
     @Override
     public int resolveEffect(Pokemon attacker, Pokemon defender, Move move_used, int damage_dealt) {
-        if(damage_dealt == 0) // Substitute was broken
+        if(damage_dealt == 0) // Substitute was broken, no coins scattered
             return NOTHING;
-
-        attacker.healDamage(damage_dealt/2);
-        return ENERGY_DRAINED;
+        return COINS_SCATTERED;
     }
 }

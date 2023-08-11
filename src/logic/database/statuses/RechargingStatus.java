@@ -12,6 +12,7 @@ public class RechargingStatus extends Status {
     @Override
     public int resolveStatus(Pokemon pokemon) {
         pokemon.removeVolatileStatus("Recharging");
+        pokemon.removeVolatileStatus("Flinch");
         return RECHARGE;
     }
 }

@@ -11,6 +11,10 @@ public class DamageFormula {
         if(move.getName().equals("Seismic Toss") || move.getName().equals("Night Shade"))
             return attacker.getLevel();
 
+        // Super Fang
+        if(move.getName().equals("Super Fang"))
+            return defender.getCurrentHp()==1? 1: defender.getCurrentHp()/2;
+
         int attackerLevel = criticalHit? attacker.getLevel() * 2 : attacker.getLevel();
         int attackerAttack;
         int attackPower = move.getPower();

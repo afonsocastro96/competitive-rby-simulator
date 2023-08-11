@@ -6,13 +6,14 @@ import logic.things.Pokemon;
 
 public class ExplodeEffect extends Effect {
     public ExplodeEffect() {
-        super("Explode Effect", 100, true);
+        super("Explode Effect", 100, false);
     }
 
     @Override
     public int resolveEffect(Pokemon attacker, Pokemon defender, Move move_used, int damage_dealt) {
-        // TODO: Add Substitute/Explosion interaction when Substitute is coded
-        attacker.setCurrentHp(0);
+        if(damage_dealt != 0) { // A substitute was broken
+            attacker.setCurrentHp(0);
+        }
         return NOTHING;
     }
 }

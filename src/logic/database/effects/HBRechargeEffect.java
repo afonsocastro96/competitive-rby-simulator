@@ -12,7 +12,8 @@ public class HBRechargeEffect extends Effect {
 
     @Override
     public int resolveEffect(Pokemon attacker, Pokemon defender, Move move_used, int damage_dealt) {
-        attacker.addVolatileStatus(new RechargingStatus());
-        return RECHARGING;
+        if(damage_dealt != 0) // A substitute was broken
+            attacker.addVolatileStatus(new RechargingStatus());
+        return NOTHING;
     }
 }

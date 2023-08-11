@@ -19,6 +19,10 @@ public class OutputHandler {
                 sb.append("\n");
                 System.out.println(text);
                 break;
+            case STRINGBUILDER:
+                sb.append(text);
+                sb.append("\n");
+                break;
         }
     }
 

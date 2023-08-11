@@ -1,15 +1,14 @@
 package logic.database.effects;
 
 import logic.Rand;
-import logic.database.statuses.ParalysisStatus;
+import logic.database.statuses.BurnStatus;
 import logic.things.Effect;
 import logic.things.Move;
 import logic.things.Pokemon;
 
-public class ParalyzeEffectThirty extends Effect {
-
-    public ParalyzeEffectThirty() {
-        super("Paralyze Side Effect 30", 30, false);
+public class BurnEffectTen extends Effect {
+    public BurnEffectTen() {
+        super("Burn Side Effect 10", 10, false);
     }
 
     @Override
@@ -21,9 +20,9 @@ public class ParalyzeEffectThirty extends Effect {
         if (move_used.getType() != defender.getType1() && move_used.getType() != defender.getType2()) {
             if (Rand.itHappened(this.getProbablility())) {
                 if (defender.getStatus() == null) {
-                    defender.setStatus(new ParalysisStatus());
-                    defender.setParalysisSpeedDropCounter(1);
-                    return SUCCESFULLY_PARALYZED;
+                    defender.setStatus(new BurnStatus());
+                    defender.setBurnAttackDropCounter(1);
+                    return SUCCESSFULLY_BURNED;
                 }
             }
         }
