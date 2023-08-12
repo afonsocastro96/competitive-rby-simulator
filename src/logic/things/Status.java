@@ -13,6 +13,8 @@ public abstract class Status{
     public static final int WOKE_UP = 8;
     public static final int HURT_BY_POISON = 9;
     public static final int HURT_BY_BURN = 10;
+    public static final int THAWED = 11;
+    public static final int ENERGY_DRAINED = 12;
 
     public enum Trigger {BEFORE_MOVING, AFTER_MOVING}
 
@@ -38,7 +40,7 @@ public abstract class Status{
         return name;
     }
 
-    public abstract int resolveStatus(Pokemon pokemon);
+    public abstract int resolveStatus(Pokemon inflicted, Pokemon opponent);
 
     public Trigger getTrigger() {
         return trigger;

@@ -8,8 +8,16 @@ public class FreezeStatus extends Status {
         super("Freeze", "FRZ", true, 0, 0, Status.Trigger.BEFORE_MOVING, 0);
     }
 
+    private boolean thaw = false;
+
+    public void thawPokemon(){this.thaw = true;}
+
     @Override
-    public int resolveStatus(Pokemon pokemon) {
+    public int resolveStatus(Pokemon inflicted, Pokemon opponent) {
+        if(thaw) {
+            inflicted.setStatus(null);
+            return THAWED;
+        }
         return FROZEN_SOLID;
     }
 }

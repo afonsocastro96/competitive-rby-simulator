@@ -10,6 +10,8 @@ public class Pokemon {
     public static final int DEFENCE = 3;
     public static final int SPEED = 4;
     public static final int SPECIAL = 5;
+    public static final int ACCURACY = 6;
+    public static final int EVASION = 7;
 
     String species;
     Type type1;
@@ -24,12 +26,23 @@ public class Pokemon {
     int defence;
     int special;
     int speed;
+
     int attackModifier;
     int defenceModifier;
     int specialModifier;
     int speedModifier;
+    int accuracyModifier;
+    int evasionModifier;
+
+    int priorityModifier;
+
     int paralysisSpeedDropCounter;
     int burnAttackDropCounter;
+    int badPoisonCounter;
+
+    boolean invulnerabilityFlag;
+    String moveBeingCharged;
+
     private Move[] moves;
     private int[] moves_pp;
 
@@ -51,8 +64,14 @@ public class Pokemon {
         defenceModifier = 0;
         specialModifier = 0;
         speedModifier = 0;
+        accuracyModifier = 0;
+        evasionModifier = 0;
         currentHp = hp;
         substituteHp = 0;
+        badPoisonCounter = 1;
+        priorityModifier = 0;
+        invulnerabilityFlag = false;
+        moveBeingCharged = null;
         volatileStatuses = new ArrayList<>();
 
         // These two are used to simulate the attack/speed burn/paralysis effect stacking glitch
@@ -121,6 +140,18 @@ public class Pokemon {
         return speedModifier;
     }
 
+    public int getAccuracyModifier() {return accuracyModifier;}
+
+    public int getEvasionModifier() {return evasionModifier;}
+
+    public int getPriorityModifier() {return priorityModifier;}
+
+    public boolean isInvulnerable() {return invulnerabilityFlag;}
+
+    public boolean isChargingMove() {return moveBeingCharged != null;}
+
+    public String getMoveBeingCharged() {return moveBeingCharged;}
+
     public void addStatModifier(int stat, int modifier) {
         switch(stat) {
             case ATTACK:
@@ -134,6 +165,35 @@ public class Pokemon {
                 break;
             case SPECIAL:
                 this.specialModifier += modifier;
+                break;
+            case ACCURACY:
+                this.accuracyModifier += modifier;
+                break;
+            case EVASION:
+                this.evasionModifier += modifier;
+                break;
+        }
+    }
+
+    public void setStatModifier(int stat, int modifier) {
+        switch(stat) {
+            case ATTACK:
+                this.attackModifier = modifier;
+                break;
+            case DEFENCE:
+                this.defenceModifier = modifier;
+                break;
+            case SPEED:
+                this.speedModifier = modifier;
+                break;
+            case SPECIAL:
+                this.specialModifier = modifier;
+                break;
+            case ACCURACY:
+                this.accuracyModifier = modifier;
+                break;
+            case EVASION:
+                this.evasionModifier = modifier;
                 break;
         }
     }
@@ -196,6 +256,16 @@ public class Pokemon {
         this.burnAttackDropCounter = burnAttackDropCounter;
     }
 
+    public void setPriorityModifier(int priorityModifier) {this.priorityModifier = priorityModifier;}
+
+    public void setType1(Type type) {
+        this.type1 = type;
+    }
+
+    public void setType2(Type type) {
+        this.type2 = type;
+    }
+
     public void setSubstituteHp(int substituteHp) {
         this.substituteHp = substituteHp;
     }
@@ -221,13 +291,24 @@ public class Pokemon {
         this.burnAttackDropCounter += burnAttackDropCounter;
     }
 
-    private int applyModifier(int stat, int modifier) {
+    public void incrementBadPoisonCounter() {badPoisonCounter++;}
+
+    public void setBadPoisonCounter(int badPoisonCounter) {this.badPoisonCounter = badPoisonCounter;}
+
+    public void toggleInvulnerability(){invulnerabilityFlag = !invulnerabilityFlag;}
+
+    public void setMoveBeingCharged(String move){this.moveBeingCharged = move;}
+
+    public void clearMoveBeingCharged(){this.moveBeingCharged = null;}
+
+    public static int convertModifierToFraction(int modifier) {
+        // -6 = 2/8, -5=2/7, -4=2/6, -3=2/5, -2=2/4, -1=2/3, 0=2/2, +1=3/2, +2=4/2, +3=5/2, +4=6/2, +5=7/2, +6=8/2
         int ret;
         int a = 2 + Math.abs(modifier);
         if(modifier > 0)
-            ret = stat * a / 2;
+            ret = a / 2;
         else
-            ret = stat * 2 / a;
+            ret = 2 / a;
         return ret;
     }
 
@@ -235,22 +316,24 @@ public class Pokemon {
         int ret = 0;
         switch(stat) {
             case ATTACK:
-                ret = applyModifier(attack, attackModifier);
+                ret = attack * convertModifierToFraction(attackModifier);
                 ret /= Math.pow(2, burnAttackDropCounter);
                 break;
             case DEFENCE:
-                ret = applyModifier(defence, defenceModifier);
+                ret = defence * convertModifierToFraction(defenceModifier);
                 break;
             case SPECIAL:
-                ret = applyModifier(special, specialModifier);
+                ret = special * convertModifierToFraction(specialModifier);
                 break;
             case SPEED:
-                ret = applyModifier(speed, speedModifier);
+                ret = speed * convertModifierToFraction(speedModifier);
                 ret /= Math.pow(4, paralysisSpeedDropCounter);
                 break;
         }
         return ret;
     }
+
+    public int getBadPoisonCounter() {return this.badPoisonCounter;}
 
     public void sortVolatileStatuses() {
         volatileStatuses.sort(Comparator.comparingInt(Status::getPriority).reversed());

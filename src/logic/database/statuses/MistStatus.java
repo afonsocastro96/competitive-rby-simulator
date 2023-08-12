@@ -3,9 +3,11 @@ package logic.database.statuses;
 import logic.things.Pokemon;
 import logic.things.Status;
 
-public class ReflectStatus extends Status {
-    public ReflectStatus() {
-        super("Reflect", "", false, 0, 0, null, 0);
+public class MistStatus extends Status {
+
+
+    public MistStatus() {
+        super("Mist", "", false, 0, 0, null, 0);
     }
 
     @Override

@@ -17,11 +17,13 @@ public class SleepStatus extends Status {
             this.sleep_counter = ThreadLocalRandom.current().nextInt(minDuration, maxDuration+1);
     }
 
+    public void setSleepCounter(int sleepCounter) {this.sleep_counter = sleepCounter;}
+
     @Override
-    public int resolveStatus(Pokemon pokemon) {
+    public int resolveStatus(Pokemon inflicted, Pokemon opponent) {
         sleep_counter--;
         if(sleep_counter == 0) {
-            pokemon.setStatus(null);
+            inflicted.setStatus(null);
             return WOKE_UP;
         }
         return FAST_ASLEEP;

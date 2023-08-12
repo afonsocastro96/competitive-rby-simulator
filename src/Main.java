@@ -8,7 +8,7 @@ import logic.database.effects.FreezeEffectTen;
 import output.OutputHandler;
 
 public class Main {
-    public static final long NUMBER_OF_SIMULATIONS = 1000000;
+    public static final long NUMBER_OF_SIMULATIONS = 1;
 
     public static void main(String[] args) {
         Moves.initialize();
@@ -22,16 +22,16 @@ public class Main {
         for (long i = 0; i < NUMBER_OF_SIMULATIONS; ++i) {
             if (NUMBER_OF_SIMULATIONS > 10 && i % (NUMBER_OF_SIMULATIONS / 10) == 0)
                 System.out.println(i * 100 / NUMBER_OF_SIMULATIONS + "% complete.");
-            GameEngine ge = new GameEngine(InputHandler.SIMULATION, OutputHandler.STRINGBUILDER);
+            GameEngine ge = new GameEngine(InputHandler.SIMULATION, OutputHandler.STDOUT);
             switch (ge.game()) {
-                case Board.PLAYER1:
+                case PLAYER1:
                     ++player1_won;
                     break;
-                case Board.PLAYER2:
+                case PLAYER2:
                     ++player2_won;
                     System.out.println(OutputHandler.getBattleLog());
                     break;
-                default:
+                case BOTH:
                     ++tie;
             }
             if(ge.getBoard().getTurn()>2)

@@ -18,6 +18,7 @@ public class Move {
             case NORMAL:
             case POISON:
             case FIGHTING:
+            case TYPELESS: // Confusion damage
                 return true;
             default:
                 return false;

@@ -9,8 +9,11 @@ public class BurnStatus extends Status {
     }
 
     @Override
-    public int resolveStatus(Pokemon pokemon) {
-        pokemon.inflictDamage(pokemon.getHp() / 16);
+    public int resolveStatus(Pokemon inflicted, Pokemon opponent) {
+        // The bad poison counter also applies to burn, but does not get incremented
+        // Only relevant when badly poisoned rests and then gets burned
+        int damageToInflict = inflicted.getHp()*inflicted.getBadPoisonCounter() / 16 == 0? 1 : inflicted.getHp()*inflicted.getBadPoisonCounter()/16;
+        inflicted.inflictDamage(damageToInflict);
         return HURT_BY_BURN;
     }
 }

@@ -1,13 +1,16 @@
 package input;
 
 import engine.Board;
+import engine.Player;
 import engine.VisibleBoard;
 import input.simulation.PickMove;
 import input.simulation.SendTeam;
 import logic.things.Pokemon;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class InputHandler {
     public static final int SIMULATION = 1;
@@ -18,19 +21,19 @@ public class InputHandler {
         inputMode = mode;
     }
 
-    public static List<String> getMoves(Board board) {
-        List<String> ret = new ArrayList<>();
+    public static Map<Player, String> getMoves(Board board) {
+        Map<Player, String> ret = new HashMap<>();
         VisibleBoard player1VisibleBoard = new VisibleBoard(
-                board.getPlayerParty(Board.PLAYER1),
-                board.getPlayerRevealedParty(Board.PLAYER2),
-                board.getPartySize(Board.PLAYER2),
+                board.getPlayerParty(Player.PLAYER1),
+                board.getPlayerRevealedParty(Player.PLAYER2),
+                board.getPartySize(Player.PLAYER2),
                 board.getTurn(),
                 board.getPlayer1ActivePokemon(),
                 board.getPlayer2ActivePokemon());
         VisibleBoard player2VisibleBoard = new VisibleBoard(
-                board.getPlayerParty(Board.PLAYER2),
-                board.getPlayerRevealedParty(Board.PLAYER1),
-                board.getPartySize(Board.PLAYER1),
+                board.getPlayerParty(Player.PLAYER2),
+                board.getPlayerRevealedParty(Player.PLAYER1),
+                board.getPartySize(Player.PLAYER1),
                 board.getTurn(),
                 board.getPlayer2ActivePokemon(),
                 board.getPlayer1ActivePokemon());
@@ -38,8 +41,8 @@ public class InputHandler {
             case SIMULATION:
                 String player1Move = PickMove.pickplayer1Move(player1VisibleBoard);
                 String player2Move = PickMove.pickplayer2Move(player2VisibleBoard);
-                ret.add(player1Move);
-                ret.add(player2Move);
+                ret.put(Player.PLAYER1, player1Move);
+                ret.put(Player.PLAYER2, player2Move);
                 break;
         }
         return ret;

@@ -1,12 +1,11 @@
 package engine;
 
-import engine.states.PickMovesState;
-import engine.states.StartState;
 import input.InputHandler;
 import logic.DamageFormula;
 import logic.Rand;
 import logic.TypeMatchups;
 import logic.database.Moves;
+import logic.database.effects.ChargeEffect;
 import logic.things.Effect;
 import logic.things.Move;
 import logic.things.Pokemon;
@@ -14,6 +13,7 @@ import logic.things.Status;
 import output.OutputHandler;
 
 import java.util.List;
+import java.util.Map;
 
 public class GameEngine {
 
@@ -25,13 +25,8 @@ public class GameEngine {
     public static final int SKIP_ATTACK = 1;
     public static final int DONT_SKIP_ATTACK = 2;
 
-    private State state;
-
-    public Board getBoard() {
-        return board;
-    }
-
     private Board board = null;
+    private Player playerToMove;
 
     public GameEngine(int inputMode, int outputMode) {
         InputHandler.setMode(inputMode);
@@ -39,74 +34,90 @@ public class GameEngine {
         init();
     }
 
-    private void handleStateChange(int nextState) {
-        switch (nextState) {
-            case PICK_MOVES_STATE:
-                state = new PickMovesState();
-        }
-    }
-
     private void init() {
         List<Pokemon[]> teams = InputHandler.getTeams();
         this.board = new Board(teams.get(0), teams.get(1));
-        this.state = new StartState();
     }
 
-    public int game() {
+    public Board getBoard() {
+        return board;
+    }
+
+    public Player game() {
         init();
-        int winner;
+        Player winner;
         while(true) {
-            List<String> moves = InputHandler.getMoves(board);
+            Map<Player, String> moves = InputHandler.getMoves(board);
             OutputHandler.outputText("\nBEGINNING OF TURN " + board.turn + "\n");
             ++board.turn;
-            int playerToMove = board.getPlayerWithFasterPokemon();
-            if(playerToMove == Board.SPEEDTIE) {
-                playerToMove = Rand.resolveSpeedTie();
-            }
-            playerMove(playerToMove, moves.get(playerToMove));
+            this.playerToMove = board.getPlayerToMoveFirst(moves);
+            // If the player is charging a move, that's the move they are using this turn
+            if(board.getPlayerActivePokemon(this.playerToMove).isChargingMove())
+                playerMove(board.getPlayerActivePokemon(this.playerToMove).getMoveBeingCharged());
+            else
+                playerMove(moves.get(this.playerToMove));
             OutputHandler.outputText("");
-            winner = gameOver();
-            if(winner != -1)
+            winner = isGameOver();
+            if(winner != Player.NONE)
                 return winner;
-            playerToMove = changePlayerToMove(playerToMove);
-            playerMove(playerToMove, moves.get(playerToMove));
-            winner = gameOver();
-            if(winner != -1)
+            swapPlayerToMove();
+            // If the player is charging a move, that's the move they are using this turn
+            if(board.getPlayerActivePokemon(this.playerToMove).isChargingMove())
+                playerMove(board.getPlayerActivePokemon(this.playerToMove).getMoveBeingCharged());
+            else
+                playerMove(moves.get(this.playerToMove));
+            winner = isGameOver();
+            if(winner != Player.NONE)
                 return winner;
         }
     }
 
-    private void resolveAfterMovingStatuses(Pokemon attacker) {
+    // TODO: Implement switching out. Remove all volatile statuses, reset boosts and drops (including burn/paralysis),
+    // restore typing changed by Conversion, reset bad poison counter, reset priority modifier back to 0,
+    // reset invulnerability from fly/dig in case of a full paralysis, restore stats changed by Transform
+
+    private void resolveAfterMovingStatuses(Pokemon attacker, Pokemon defender) {
         int status_result;
         for(Status status : attacker.getVolatileStatuses()) {
             if(status.getTrigger() == Status.Trigger.AFTER_MOVING) {
-                status_result = status.resolveStatus(attacker);
+                status_result = status.resolveStatus(attacker, defender);
                 if (status_result != Status.NOTHING)
                     printStatusMessage(attacker.getSpecies(), status_result);
             }
         }
         if(attacker.getStatus() != null) {
             if (attacker.getStatus().getTrigger().equals(Status.Trigger.AFTER_MOVING)) {
-                status_result = attacker.getStatus().resolveStatus(attacker);
+                status_result = attacker.getStatus().resolveStatus(attacker, defender);
                 if (status_result != Status.NOTHING)
                     printStatusMessage(attacker.getSpecies(), status_result);
             }
         }
     }
 
-    private int resolveBeforeMovingStatuses(Pokemon attacker) {
-        int status_result;
-        boolean recharge = false;
+    // Resolve all the  checks that may stop the Pokemon from attacking
+    private int resolveBeforeMovingConditions(Pokemon attacker, Pokemon defender, Move move) {
+        // Resolve statuses that kick in before moving, such as sleep, paralysis and confusion
+        if(resolveBeforeMovingStatuses(attacker, defender) == SKIP_ATTACK) return SKIP_ATTACK;
+        // If no move is already being charged and the Pokemon is using a charging move, set up charging turn
+        if(!attacker.isChargingMove() && move.getEffect().getName().equals("Charge Effect")) {
+            resolveChargingMoveEffect(attacker, move);
+            return SKIP_ATTACK;
+        }
+        return DONT_SKIP_ATTACK;
+    }
 
+    private int resolveBeforeMovingStatuses(Pokemon attacker, Pokemon defender) {
+        int status_result;
 
         // Priority order: Freeze/Sleep -> Recharge -> Flinch -> Confusion -> Paralysis
         if(attacker.getStatus() != null) {
             if (attacker.getStatus().getName().equals("Freeze")) {
-                OutputHandler.outputText(attacker.getSpecies() + " is frozen solid!");
+                status_result = attacker.getStatus().resolveStatus(attacker, defender);
+                printStatusMessage(attacker.getSpecies(), status_result);
                 return SKIP_ATTACK;
             }
             if (attacker.getStatus().getName().equals("Sleep")) {
-                status_result = attacker.getStatus().resolveStatus(attacker);
+                status_result = attacker.getStatus().resolveStatus(attacker, defender);
                 printStatusMessage(attacker.getSpecies(), status_result);
                 return SKIP_ATTACK;
             }
@@ -117,12 +128,12 @@ public class GameEngine {
             switch (status.getName()) {
             case "Recharging":
             case "Flinch":
-                status_result = status.resolveStatus(attacker);
+                status_result = status.resolveStatus(attacker, defender);
                 printStatusMessage(attacker.getSpecies(), status_result);
                 return SKIP_ATTACK;
 
             case "Confusion":
-                    status_result = status.resolveStatus(attacker);
+                    status_result = status.resolveStatus(attacker, defender);
                     if (status_result == Status.HURT_ITSELF_CONFUSION) {
                         printStatusMessage(attacker.getSpecies(), status_result);
                         return SKIP_ATTACK;
@@ -133,7 +144,7 @@ public class GameEngine {
 
         if(attacker.getStatus() != null) {
             if (attacker.getStatus().getName().equals("Paralysis")) {
-                status_result = attacker.getStatus().resolveStatus(attacker);
+                status_result = attacker.getStatus().resolveStatus(attacker, defender);
                 if (status_result != Status.NOTHING) {
                     printStatusMessage(attacker.getSpecies(), status_result);
                     return SKIP_ATTACK;
@@ -142,6 +153,14 @@ public class GameEngine {
         }
 
         return DONT_SKIP_ATTACK;
+    }
+
+    private void resolveChargingMoveEffect(Pokemon attacker, Move move) {
+        ChargeEffect ce = (ChargeEffect) move.getEffect();
+        attacker.setMoveBeingCharged(move.getName());
+        if(ce.appliesInvulnerability())
+            attacker.toggleInvulnerability();
+        OutputHandler.outputText(attacker.getSpecies() + " " + ce.getChargingMessage());
     }
 
     private void printStatusMessage(String attacker_name, int status_result) {
@@ -173,80 +192,102 @@ public class GameEngine {
             case Status.WOKE_UP:
                 OutputHandler.outputText(attacker_name + " woke up!");
                 break;
+            case Status.THAWED:
+                OutputHandler.outputText(attacker_name + " thawed out!");
+                break;
+            case Status.FROZEN_SOLID:
+                OutputHandler.outputText(attacker_name + " is frozen solid!");
+                break;
+            case Status.ENERGY_DRAINED:
+                OutputHandler.outputText(attacker_name + " had its energy drained!");
+                break;
         }
     }
 
-    private int changePlayerToMove(int playerToMove) {
-        return 1 - playerToMove;
+    private void swapPlayerToMove() {
+        if(this.playerToMove == Player.PLAYER1)
+            this.playerToMove = Player.PLAYER2;
+        else
+            this.playerToMove = Player.PLAYER1;
     }
 
 
-    private void playerMove(int player, String action) {
+    private void playerMove(String action) {
         Move move = Moves.getMove(action);
         Pokemon attacker;
         Pokemon defender;
-        switch(player) {
-            case Board.PLAYER1:
-                attacker = board.getPlayer1ActivePokemon();
-                defender = board.getPlayer2ActivePokemon();
-                break;
-            default:
-                attacker = board.getPlayer2ActivePokemon();
-                defender = board.getPlayer1ActivePokemon();
+        if (this.playerToMove == Player.PLAYER1) {
+            attacker = board.getPlayer1ActivePokemon();
+            defender = board.getPlayer2ActivePokemon();
+        } else {
+            attacker = board.getPlayer2ActivePokemon();
+            defender = board.getPlayer1ActivePokemon();
         }
 
-        //Resolve statuses that kick in before moving, such as sleep, paralysis and confusion
-        if(resolveBeforeMovingStatuses(attacker) != SKIP_ATTACK) {
+        // Check if any status or the selection of a charging move stops us from attacking this turn
+        if(resolveBeforeMovingConditions(attacker, defender, move) != SKIP_ATTACK) {
             //Ok, nothing stopped the attacker from moving, let's progress
             OutputHandler.outputText(attacker.getSpecies() + " used " + move.getName() + "!");
             attacker.reduceMovePP(move.getName());
-            // Move missed
-            if (Rand.attackMissed(move.getAccuracy())) {
+            // If we just executed a charge move, clear it
+            if(move.getEffect().getName().equals("Charge Effect")) {
+                attacker.clearMoveBeingCharged();
+                if (((ChargeEffect) move.getEffect()).appliesInvulnerability())
+                    attacker.toggleInvulnerability();
+            }
+            // If the move is Dream Eater, check if the opponent is asleep
+            if(move.getName().equals("Dream Eater") && defender.getStatus() == null) {
+                if (!defender.getStatus().getName().equals("Sleep"))
+                    printEffectResultText(Effect.BUT_IT_FAILED, attacker.getSpecies(), defender.getSpecies());
+            }
+            // Accuracy check
+            else if (Rand.attackMissed(move.getAccuracy(), attacker, defender)) {
                 OutputHandler.outputText(attacker.getSpecies() + "'s attack missed!");
                 //HJK, JK, Selfdestruct and Explosion have side effects if they miss, so resolve those
                 if (move.getName().equals("Hi Jump Kick") || move.getName().equals("Jump Kick")) {
                     attacker.inflictDamage(1);
                     OutputHandler.outputText(attacker.getSpecies() + " is hurt!");
-                    int fainted = board.checkFaintedPokemon();
-                    // If we fainted from recoil, the turn is over
-                    if (fainted > -1) {
-                        resolveFaint(fainted);
-                        return;
-                    }
                 } else if (move.getEffect().getName().equals("Explode Effect")) {
                     attacker.setCurrentHp(0);
-                    int fainted = board.checkFaintedPokemon();
+                }
+                Player fainted = board.checkFaintedPokemon();
+                // If we fainted from recoil/if we used explosion, the turn is over
+                if (fainted != Player.NONE) {
                     resolveFaint(fainted);
                     return;
                 }
-            } else {
-                //Determine damage to do
+            } else { // Move didn't miss, determine damage to do
                 int damageDealt = 0;
                 if (move.getPower() > 0) {
                     boolean criticalHit = Rand.criticalHit(move, attacker);
 
                     int damage = DamageFormula.calcDamage(attacker, defender, move, criticalHit);
-                    damageDealt = defender.inflictDamage(damage);
-                    if (criticalHit) {
-                        OutputHandler.outputText("\tA critical hit!");
-                        if (player == Board.PLAYER1)
-                            Rand.crits++;
-                    } else if (player == Board.PLAYER1) Rand.nonCrits++;
-                    printEffectivessText(defender, move);
-                    if (damageDealt < 0)
-                        OutputHandler.outputText("The substitute took damage for " + defender.getSpecies() + "!");
-                    else if (damageDealt == 0)
-                        OutputHandler.outputText(defender.getSpecies() + "'s substitute broke!");
-                    else
-                        OutputHandler.outputText(defender.getSpecies() + " lost " + (int) ((double) damageDealt / defender.getHp() * 100) + "% of its health!");
+                    if(damage == 0) { // Should only happen with Psywave in case of the Desync Glitch
+                        System.out.println("(Note: Desync Clause triggered)");
+                        printEffectResultText(Effect.BUT_IT_FAILED, attacker.getSpecies(), defender.getSpecies());
+                    }
+                    else {
+                        damageDealt = defender.inflictDamage(damage);
+                        if (move.getPower() != 1) { // Night Shade, Seismic Toss, Super Fang, Dragon Rage, Psybeam, Sonicboom
+                            if (criticalHit && move.getPower() != 2) // OHKO moves
+                                OutputHandler.outputText("\tA critical hit!");
+                            printEffectivessText(defender, move);
+                        }
+                        if (damageDealt < 0)
+                            OutputHandler.outputText("The substitute took damage for " + defender.getSpecies() + "!");
+                        else if (damageDealt == 0)
+                            OutputHandler.outputText(defender.getSpecies() + "'s substitute broke!");
+                        else
+                            OutputHandler.outputText(defender.getSpecies() + " lost " + (int) ((double) damageDealt / defender.getHp() * 100) + "% of its health!");
+                    }
                 }
-                //Apply any secondary effects that kick in regardless of the opponent fainting or not (ex: recoil)
+                //Apply any secondary effects that kick in regardless of the opponent fainting or not (eg: recoil)
                 if (!move.getEffect().isEffectAppliedAfterOpponentFainted()) {
                     int effectResult = move.getEffect().resolveEffect(attacker, defender, move, damageDealt);
                     printEffectResultText(effectResult, attacker.getSpecies(), defender.getSpecies());
                 }
-                int fainted = board.checkFaintedPokemon();
-                if (fainted > -1) {
+                Player fainted = board.checkFaintedPokemon();
+                if (fainted != Player.NONE) {
                     resolveFaint(fainted);
                     return;
                 }
@@ -256,16 +297,16 @@ public class GameEngine {
                     printEffectResultText(effectResult, attacker.getSpecies(), defender.getSpecies());
                 }
                 fainted = board.checkFaintedPokemon();
-                if (fainted > -1)
+                if (fainted != Player.NONE)
                     resolveFaint(fainted);
             }
         }
 
         //Apply statuses that kick in after the player moved and only if no Pokémon fainted (ex: poison / burn)
         // Note that these also get applied if the player didn't have a chance to move (e.g. because of flinch)
-        resolveAfterMovingStatuses(attacker);
-        int fainted = board.checkFaintedPokemon();
-        if (fainted > -1)
+        resolveAfterMovingStatuses(attacker, defender);
+        Player fainted = board.checkFaintedPokemon();
+        if (fainted != Player.NONE)
             resolveFaint(fainted);
     }
 
@@ -284,7 +325,7 @@ public class GameEngine {
             case Effect.ALREADY_PARALYZED:
                 OutputHandler.outputText(defender_name + " is already paralyzed.");
                 break;
-            case Effect.SUCCESFULLY_PARALYZED:
+            case Effect.SUCCESSFULLY_PARALYSED:
                 OutputHandler.outputText(defender_name + " is paralyzed! It may be unable to move!");
                 break;
             case Effect.BUT_IT_FAILED:
@@ -317,7 +358,7 @@ public class GameEngine {
             case Effect.SPECIAL_SHARPLY_RAISED:
                 OutputHandler.outputText(attacker_name + "'s special rose sharply!");
                 break;
-            case Effect.SPEED_DROP:
+            case Effect.SPEED_DROPPED:
                 OutputHandler.outputText(defender_name + "'s speed fell!");
                 break;
             case Effect.ENERGY_DRAINED:
@@ -349,46 +390,94 @@ public class GameEngine {
                 break;
             case Effect.DEFENCE_DROP:
                 OutputHandler.outputText(defender_name + "'s defense fell! ");
+                break;
+            case Effect.SHROUDED_IN_MIST:
+                OutputHandler.outputText(defender_name + " became shrouded in mist!");
+                break;
+            case Effect.DEFENCE_SHARPLY_RAISED:
+                OutputHandler.outputText(defender_name + "'s defense sharply rose!");
+                break;
+            case Effect.DEFENCE_RAISED:
+                OutputHandler.outputText(defender_name + "'s defense rose!");
+                break;
+            case Effect.ATTACK_DROPPED:
+                OutputHandler.outputText(defender_name + "'s attack dropped!");
+                break;
+            case Effect.DEFENCE_SHARPLY_DROPPED:
+                OutputHandler.outputText(defender_name + "'s defense dropped sharply!");
+                break;
+            case Effect.SUCCESSFULLY_POISONED:
+                OutputHandler.outputText(defender_name + " was poisoned!");
+                break;
+            case Effect.GETTING_PUMPED:
+                OutputHandler.outputText(attacker_name + " is getting pumped!");
+                break;
+            case Effect.STATUS_CHANGES_ELIMINATED:
+                OutputHandler.outputText("Status changes are eliminated!");
+                break;
+            case Effect.CONVERTED_TYPE:
+                OutputHandler.outputText("Converted type to " + defender_name + "'s!");
+                break;
+            case Effect.DREAM_EATEN:
+                OutputHandler.outputText(defender_name + "'s name was eaten!");
+                break;
+            case Effect.BUT_NOTHING_HAPPENED:
+                OutputHandler.outputText("But nothing happened!");
+                break;
+            case Effect.ONE_HIT_KO:
+                OutputHandler.outputText("One-hit KO!");
+                break;
+            case Effect.WAS_SEEDED:
+                OutputHandler.outputText(defender_name + " was seeded!");
+                break;
+            case Effect.ACCURACY_DROPPED:
+                OutputHandler.outputText(defender_name + "'s accuracy dropped!");
+                break;
+            case Effect.EVASION_RAISED:
+                OutputHandler.outputText(attacker_name + "'s evasion rose!");
+                break;
+
+
         }
     }
 
-    private void resolveFaint(int fainted) {
+    private void resolveFaint(Player fainted) {
         switch (fainted) {
-            case 2:
+            case BOTH:
                 OutputHandler.outputText(board.getPlayer1ActivePokemon().getSpecies() + " fainted!");
                 OutputHandler.outputText("The opposing " + board.getPlayer2ActivePokemon().getSpecies() + " fainted!");
-                board.decrementPlayerCounsciousPokemon(Board.PLAYER1);
-                board.decrementPlayerCounsciousPokemon(Board.PLAYER2);
+                board.decrementPlayerCounsciousPokemon(Player.PLAYER1);
+                board.decrementPlayerCounsciousPokemon(Player.PLAYER2);
                 break;
-            case Board.PLAYER1:
+            case PLAYER1:
                 OutputHandler.outputText(board.getPlayer1ActivePokemon().getSpecies() + " fainted!");
-                board.decrementPlayerCounsciousPokemon(Board.PLAYER1);
+                board.decrementPlayerCounsciousPokemon(Player.PLAYER1);
 
                 break;
-            case Board.PLAYER2:
+            case PLAYER2:
                 OutputHandler.outputText("The opposing " + board.getPlayer2ActivePokemon().getSpecies() + " fainted!");
-                board.decrementPlayerCounsciousPokemon(Board.PLAYER2);
+                board.decrementPlayerCounsciousPokemon(Player.PLAYER2);
                 break;
         }
     }
 
-    private int gameOver() {
-        boolean player1HasConsciousPokemon = board.hasConsciousPokemon(Board.PLAYER1);
-        boolean player2HasConsciousPokemon = board.hasConsciousPokemon(Board.PLAYER2);
+    private Player isGameOver() {
+        boolean player1HasConsciousPokemon = board.hasConsciousPokemon(Player.PLAYER1);
+        boolean player2HasConsciousPokemon = board.hasConsciousPokemon(Player.PLAYER2);
         if((!player1HasConsciousPokemon && !player2HasConsciousPokemon) || board.turn == ENDLESS_BATTLE_THRESHOLD) {
             OutputHandler.outputText("Tie between player 1 and 2!");
-            return Board.TIE;
+            return Player.BOTH;
         }
         else if(!player1HasConsciousPokemon) {
             OutputHandler.outputText("Player 2 won the game!");
-            return Board.PLAYER2;
+            return Player.PLAYER2;
         }
         else if(!player2HasConsciousPokemon) {
             OutputHandler.outputText("Player 1 won the game!");
-            return Board.PLAYER1;
+            return Player.PLAYER1;
         }
         else
-            return -1;
+            return Player.NONE;
     }
 
 }

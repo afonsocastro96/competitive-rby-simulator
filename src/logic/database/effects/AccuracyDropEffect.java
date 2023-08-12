@@ -4,10 +4,10 @@ import logic.things.Effect;
 import logic.things.Move;
 import logic.things.Pokemon;
 
-public class DefenceDropEffect extends Effect {
+public class AccuracyDropEffect extends Effect {
 
-    public DefenceDropEffect() {
-        super("Defense Drop Effect", 100, false);
+    public AccuracyDropEffect() {
+        super("Accuracy Drop Effect", 100, false);
     }
 
     @Override
@@ -15,9 +15,9 @@ public class DefenceDropEffect extends Effect {
         if(defender.hasVolatileStatus("Mist"))
             return BUT_IT_FAILED;
         else {
-            defender.addStatModifier(Pokemon.DEFENCE, -1);
+            defender.addStatModifier(Pokemon.ACCURACY, -1);
             applyStackingEffectGlitch(defender);
-            return DEFENCE_DROP;
+            return ACCURACY_DROPPED;
         }
     }
 }

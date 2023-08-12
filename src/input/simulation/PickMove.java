@@ -13,7 +13,7 @@ public class PickMove {
     }
 
     public static String pickplayer2Move(VisibleBoard board) {
-        return "Explosion";
+        return "Skull Bash";
         /*if(board.getOwnActivePokemon().getCurrentHp() == 63 && board.getOpponentActivePokemon().getCurrentHp() <= 370)
             return "Explosion";
         if(board.getOwnActivePokemon().getMovePP("Earthquake") != 0)

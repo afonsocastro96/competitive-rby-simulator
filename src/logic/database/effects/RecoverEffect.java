@@ -33,6 +33,7 @@ public class RecoverEffect extends Effect {
             attacker.setCurrentHp(attacker.getCurrentHp()+amountToRecover);
 
         if(move_used.getName().equals("Rest")) {
+            // Note that Rest does not reset the bad poison counter, the speed drop from paralysis or the attack burn from burn
             attacker.setStatus(new SleepStatus(true));
             return REST_SUCCESSFUL;
         }

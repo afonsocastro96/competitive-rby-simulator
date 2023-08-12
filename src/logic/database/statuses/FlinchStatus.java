@@ -9,9 +9,9 @@ public class FlinchStatus extends Status {
     }
 
     @Override
-    public int resolveStatus(Pokemon pokemon) {
-        pokemon.removeVolatileStatus("Flinch");
-        pokemon.removeVolatileStatus("Recharging");
+    public int resolveStatus(Pokemon inflicted, Pokemon opponent) {
+        inflicted.removeVolatileStatus("Flinch");
+        inflicted.removeVolatileStatus("Recharging");
         return FLINCH;
     }
 }

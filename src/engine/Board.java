@@ -1,13 +1,12 @@
 package engine;
 
+import logic.Rand;
 import logic.things.Pokemon;
 
-public class Board {
-    public static final int PLAYER1 = 0;
-    public static final int PLAYER2 = 1;
-    public static final int TIE = 2;
-    public static final int SPEEDTIE = -1;
+import java.util.Arrays;
+import java.util.Map;
 
+public class Board {
     private Pokemon[] player1Party;
     private boolean[] player1revealeds;
     private Pokemon[] player2Party;
@@ -26,28 +25,26 @@ public class Board {
         this.player1revealeds = new boolean[player1Party.length];
         this.player1CounsciousPokemon = player1Party.length;
         this.player2CounsciousPokemon = player2Party.length;
-        for(int i = 0; i < player1revealeds.length; ++i){
-            player1revealeds[i] = false;
-        }
+        Arrays.fill(player1revealeds, false);
         this.player2Party = player2Party;
         this.player2revealeds = new boolean[player2Party.length];
-        for(int i = 0; i < player2revealeds.length; ++i){
-            player2revealeds[i] = false;
-        }
+        Arrays.fill(player2revealeds, false);
     }
 
-    public void setRevealed(int player, int index) {
-        if (player == PLAYER1)
+    public void setRevealed(Player player, int index) {
+        if (player == Player.PLAYER1)
             player1revealeds[index] = true;
-        else
+        else if(player == Player.PLAYER2)
             player2revealeds[index] = true;
+        else throw new IllegalArgumentException();
     }
 
-    public Pokemon[] getPlayerParty(int player) {
-        if(player == PLAYER1)
+    public Pokemon[] getPlayerParty(Player player) {
+        if(player == Player.PLAYER1)
             return player1Party;
-        else
+        else if(player == Player.PLAYER2)
             return player2Party;
+        else throw new IllegalArgumentException();
     }
 
     public Pokemon getPlayer1ActivePokemon() {
@@ -58,36 +55,56 @@ public class Board {
         return player2Party[player2ActivePokemon];
     }
 
-    public int getTurn() {
+    public int getTurn() { return turn; }
 
-        return turn;
-    }
-
-    public int getPartySize(int player) {
-        if(player == PLAYER1)
-
+    public int getPartySize(Player player) {
+        if(player == Player.PLAYER1)
             return player1Party.length;
-        else
+        else if(player == Player.PLAYER2)
             return player2Party.length;
+        else throw new IllegalArgumentException();
     }
 
-    public Pokemon[] getPlayerRevealedParty(int player) {
-        if (player == PLAYER1)
+    public Pokemon[] getPlayerRevealedParty(Player player) {
+        if (player == Player.PLAYER1)
             return getPlayer1revealedParty();
-        else
+        else if(player == Player.PLAYER2)
             return getPlayer2revealedParty();
+        else throw new IllegalArgumentException();
     }
 
-    public int getPlayerWithFasterPokemon() {
+    public Player getPlayerToMoveFirst(Map<Player, String> moves) {
+        updatePriorityModifier(moves);
+        int player1priority = player1Party[player1ActivePokemon].getPriorityModifier();
+        int player2priority = player2Party[player2ActivePokemon].getPriorityModifier();
+
         int player1speed = player1Party[player1ActivePokemon].getStatWithModifiers(Pokemon.SPEED);
         int player2speed = player2Party[player2ActivePokemon].getStatWithModifiers(Pokemon.SPEED);
 
-        if(player1speed > player2speed)
-            return PLAYER1;
-        else if(player2speed > player1speed)
-            return PLAYER2;
-        else
-            return SPEEDTIE;
+        if(player1priority > player2priority)
+            return Player.PLAYER1;
+        else if(player2priority > player1priority)
+            return Player.PLAYER2;
+        else {
+            if (player1speed > player2speed)
+                return Player.PLAYER1;
+            else if (player2speed > player1speed)
+                return Player.PLAYER2;
+            else
+                return Rand.resolveSpeedTie();
+        }
+    }
+
+    private void updatePriorityModifier(Map<Player, String> moves) {
+        if(moves.get(Player.PLAYER1).equals("Quick Attack"))
+            this.player1Party[player1ActivePokemon].setPriorityModifier(1);
+        else if(moves.get(Player.PLAYER1).equals("Counter"))
+            this.player1Party[player1ActivePokemon].setPriorityModifier(-1);
+
+        if(moves.get(Player.PLAYER2).equals("Quick Attack"))
+            this.player2Party[player2ActivePokemon].setPriorityModifier(1);
+        else if(moves.get(Player.PLAYER2).equals("Counter"))
+            this.player2Party[player2ActivePokemon].setPriorityModifier(-1);
     }
 
     private Pokemon[] getPlayer1revealedParty() {
@@ -126,14 +143,14 @@ public class Board {
         return ret;
     }
 
-    public Pokemon getPlayerActivePokemon(int player) {
-        if (player == PLAYER1)
+    public Pokemon getPlayerActivePokemon(Player player) {
+        if (player == Player.PLAYER1)
             return player1Party[player1ActivePokemon];
         else
             return player2Party[player2ActivePokemon];
     }
 
-    public void decrementPlayerCounsciousPokemon(int player) {
+    public void decrementPlayerCounsciousPokemon(Player player) {
         switch(player) {
             case PLAYER1:
                 player1CounsciousPokemon--;
@@ -143,7 +160,7 @@ public class Board {
         }
     }
 
-    public boolean hasConsciousPokemon(int player) {
+    public boolean hasConsciousPokemon(Player player) {
         switch(player) {
             case PLAYER1:
                 return player1CounsciousPokemon != 0;
@@ -152,7 +169,7 @@ public class Board {
         }
     }
 
-    public int checkFaintedPokemon() {
+    public Player checkFaintedPokemon() {
         boolean player1Pokemonfainted = false;
         boolean player2Pokemonfainted = false;
         if(getPlayer1ActivePokemon().getCurrentHp() == 0)
@@ -160,13 +177,13 @@ public class Board {
         if(getPlayer2ActivePokemon().getCurrentHp() == 0)
             player2Pokemonfainted = true;
         if(player1Pokemonfainted && player2Pokemonfainted)
-            return 2;
+            return Player.BOTH;
         else if(player1Pokemonfainted)
-            return PLAYER1;
+            return Player.PLAYER1;
         else if (player2Pokemonfainted)
-            return PLAYER2;
+            return Player.PLAYER2;
         else
-            return -1;
+            return Player.NONE;
     }
 
 }

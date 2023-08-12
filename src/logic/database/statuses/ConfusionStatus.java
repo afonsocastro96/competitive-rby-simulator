@@ -19,16 +19,20 @@ public class ConfusionStatus extends Status {
     }
 
     @Override
-    public int resolveStatus(Pokemon pokemon) {
+    public int resolveStatus(Pokemon inflicted, Pokemon opponent) {
         --confusionCounter;
         if(this.confusionCounter == 0)
             return SNAPPED_OUT_CONFUSION;
         else {
-            OutputHandler.outputText(pokemon.getSpecies() + " is confused!");
+            OutputHandler.outputText(inflicted.getSpecies() + " is confused!");
             if(Rand.itHappened(50)) {
-                if(pokemon.getSubstituteHp() == 0)
-                    pokemon.inflictDamage(DamageFormula.calcDamage(pokemon, pokemon, Moves.getMove("Confusion Damage"), false));
-                OutputHandler.outputText("(Note: if the confused Pokemon has a substitute, it does not take damage from confusion, despite the message showing up anyway.)");
+                inflicted.clearMoveBeingCharged(); // If the Pokemon was charging a move, cancel it
+                if(inflicted.isInvulnerable()) inflicted.toggleInvulnerability(); // Remove invulnerability if Fly/Dig
+                if(inflicted.getSubstituteHp() == 0)
+                    // TODO: If the opponent has reflect up, confusion does half damage
+                    inflicted.inflictDamage(DamageFormula.calcDamage(inflicted, inflicted, Moves.getMove("Confusion Damage"), false));
+                else
+                    OutputHandler.outputText("(Note: if the confused Pokemon has a substitute, it does not take damage from confusion, despite the message showing up anyway.)");
                 return HURT_ITSELF_CONFUSION;
             }
             else return NOTHING;

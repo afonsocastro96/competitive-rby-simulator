@@ -15,6 +15,8 @@ public class DrainEffect extends Effect {
             return NOTHING;
 
         attacker.healDamage(damage_dealt/2);
+        if(move_used.getName().equals("Dream Eater"))
+            return DREAM_EATEN;
         return ENERGY_DRAINED;
     }
 }

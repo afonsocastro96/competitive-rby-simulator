@@ -16,7 +16,7 @@ public class ParalyzeEffect extends Effect {
         if(defender.getStatus() == null) {
             defender.setStatus(new ParalysisStatus());
             defender.setParalysisSpeedDropCounter(1);
-            return SUCCESFULLY_PARALYZED;
+            return SUCCESSFULLY_PARALYSED;
         }
         else if(defender.getStatus().getName().equals("Paralysis"))
             return ALREADY_PARALYZED;

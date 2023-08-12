@@ -1,14 +1,15 @@
 package logic.database.effects;
 
 import logic.database.statuses.BadPoisonStatus;
+import logic.database.statuses.PoisonStatus;
 import logic.things.Effect;
 import logic.things.Move;
 import logic.things.Pokemon;
 import logic.things.Type;
 
-public class BadPoisonEffect extends Effect {
-    public BadPoisonEffect() {
-        super("Bad Poison Effect", 100, false);
+public class PoisonEffect extends Effect {
+    public PoisonEffect() {
+        super("Poison Effect", 100, false);
     }
 
     @Override
@@ -18,9 +19,8 @@ public class BadPoisonEffect extends Effect {
         if(defender.getSubstituteHp() == 0)
             return BUT_IT_FAILED;
         if(defender.getStatus() == null) {
-            defender.setStatus(new BadPoisonStatus());
-            defender.setBadPoisonCounter(1);
-            return SUCCESSFULLY_BADLY_POISONED;
+            defender.setStatus(new PoisonStatus());
+            return SUCCESSFULLY_POISONED;
         }
         return BUT_IT_FAILED;
     }

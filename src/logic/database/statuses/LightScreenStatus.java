@@ -9,7 +9,7 @@ public class LightScreenStatus extends Status {
     }
 
     @Override
-    public int resolveStatus(Pokemon pokemon) {
+    public int resolveStatus(Pokemon inflicted, Pokemon opponent) {
         return NOTHING;
     }
 }

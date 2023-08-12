@@ -6,7 +6,7 @@ import logic.things.Pokemon;
 
 public class AttackRaiseEffect extends Effect {
     public AttackRaiseEffect() {
-        super("Attack Sharp Raise Effect", 100, false);
+        super("Attack Raise Effect", 100, false);
     }
 
     @Override

@@ -11,9 +11,30 @@ public class DamageFormula {
         if(move.getName().equals("Seismic Toss") || move.getName().equals("Night Shade"))
             return attacker.getLevel();
 
+        if(move.getName().equals("Psywave"))
+            return Rand.psywaveDamage(attacker.getLevel());
+
         // Super Fang
         if(move.getName().equals("Super Fang"))
             return defender.getCurrentHp()==1? 1: defender.getCurrentHp()/2;
+
+        // Dragon Rage and Sonicboom
+        if(move.getName().equals("Dragon Rage"))
+            return 40;
+        if(move.getName().equals("Sonicboom"))
+            return 20;
+
+        // One hit KO moves
+        if(move.getName().equals("Horn Drill") || move.getName().equals("Guillotine")) {
+            if(defender.getType1() == Type.GHOST || defender.getType2() == Type.GHOST)
+                return 0;
+            else return 65535;
+        }
+        if(move.getName().equals("Fissure")) {
+            if(defender.getType1() == Type.FLYING || defender.getType2() == Type.FLYING)
+                return 0;
+            else return 65535;
+        }
 
         int attackerLevel = criticalHit? attacker.getLevel() * 2 : attacker.getLevel();
         int attackerAttack;
@@ -54,7 +75,8 @@ public class DamageFormula {
             typeModifier = (defender.getType1() == defender.getType2() ?
                     TypeMatchups.getMatchup(move.getType(), defender.getType1()) :
                     TypeMatchups.getMatchup(move.getType(), defender.getType1()) * TypeMatchups.getMatchup(move.getType(), defender.getType2()));
-        int random_modifier = Rand.getDamageFormulaRandomModifier();
+
+        int random_modifier = move.getName().equals("Confusion Damage")? 255 : Rand.getDamageFormulaRandomModifier();
 
         int part1 = 2 * attackerLevel / 5 + 2;
         int part2 = part1 * attackerAttack * attackPower;

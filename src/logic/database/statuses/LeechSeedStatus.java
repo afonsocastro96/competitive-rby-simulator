@@ -9,7 +9,12 @@ public class LeechSeedStatus extends Status {
     }
 
     @Override
-    public int resolveStatus(Pokemon pokemon) {
-        return 0;
+    public int resolveStatus(Pokemon inflicted, Pokemon opponent) {
+        // In RBY, the bad poison counter is also used and incremented in Leech Seed
+        int damageToInflict = inflicted.getHp()*inflicted.getBadPoisonCounter() / 16 == 0? 1 : inflicted.getHp()*inflicted.getBadPoisonCounter()/16;
+        inflicted.inflictDamage(damageToInflict);
+        opponent.healDamage(damageToInflict);
+        inflicted.incrementBadPoisonCounter();
+        return ENERGY_DRAINED;
     }
 }

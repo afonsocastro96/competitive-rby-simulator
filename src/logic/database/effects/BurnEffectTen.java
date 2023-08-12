@@ -2,6 +2,7 @@ package logic.database.effects;
 
 import logic.Rand;
 import logic.database.statuses.BurnStatus;
+import logic.database.statuses.FreezeStatus;
 import logic.things.Effect;
 import logic.things.Move;
 import logic.things.Pokemon;
@@ -13,6 +14,11 @@ public class BurnEffectTen extends Effect {
 
     @Override
     public int resolveEffect(Pokemon attacker, Pokemon defender, Move move_used, int damage_dealt) {
+        if (defender.getStatus().getName().equals("Freeze")) {
+            FreezeStatus fs = (FreezeStatus) defender.getStatus();
+            fs.thawPokemon();
+        }
+
         if(damage_dealt <= 0) // Substitute
             return NOTHING;
 

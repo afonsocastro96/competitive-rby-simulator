@@ -22,7 +22,7 @@ public class ParalyzeEffectTen extends Effect {
                 if (defender.getStatus() == null) {
                     defender.setStatus(new ParalysisStatus());
                     defender.setParalysisSpeedDropCounter(1);
-                    return SUCCESFULLY_PARALYZED;
+                    return SUCCESSFULLY_PARALYSED;
                 }
             }
         }

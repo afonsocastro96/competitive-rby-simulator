@@ -5,9 +5,9 @@ import logic.things.Effect;
 import logic.things.Move;
 import logic.things.Pokemon;
 
-public class SpeedDropEffectThirtyThree extends Effect {
-    public SpeedDropEffectThirtyThree() {
-        super("Speed Drop Side Effect 33", 33.33, false);
+public class AttackDropEffectThirtyThree extends Effect {
+    public AttackDropEffectThirtyThree() {
+        super("Attack Drop Side Effect 33", 33.33, false);
     }
 
     @Override
@@ -15,9 +15,9 @@ public class SpeedDropEffectThirtyThree extends Effect {
         if(damage_dealt <= 0) // Substitute
             return NOTHING;
         if (Rand.itHappened(this.getProbablility())) {
-            defender.addStatModifier(Pokemon.SPEED, -1);
+            defender.addStatModifier(Pokemon.ATTACK, -1);
             applyStackingEffectGlitch(defender);
-            return SPEED_DROPPED;
+            return ATTACK_DROPPED;
         }
         return NOTHING;
     }
